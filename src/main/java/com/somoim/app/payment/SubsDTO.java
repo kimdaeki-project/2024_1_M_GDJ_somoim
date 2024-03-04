@@ -48,6 +48,11 @@ public class SubsDTO {
 	public void setDoneDate(Date doneDate) {
 		this.doneDate = doneDate;
 	}
+	@Override
+	public String toString() {
+		return "SubsDTO [subNum=" + subNum + ", paymentKey=" + paymentKey + ", customerKey=" + customerKey + ", svs="
+				+ svs + ", startDate=" + startDate + ", doneDate=" + doneDate + "]";
+	}
 	
 	
 	
