@@ -85,7 +85,7 @@ public class NoticeService implements BoardService{
 	public int setUpdate(BoardDTO boardDTO, MultipartFile[] attachs) throws Exception {
 
 		//1. 글을 등록 - 글번호를 알아오기 위해서
-		int result = noticeDAO.setAdd(boardDTO);	
+		int result = noticeDAO.setUpdate(boardDTO);	
 		
 		//2. 파일을 HDD에 저장
 		//2-1 저장할 폴더의 실제 경로 구하기

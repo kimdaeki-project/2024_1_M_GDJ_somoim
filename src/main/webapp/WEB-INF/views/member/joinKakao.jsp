@@ -1,4 +1,4 @@
-<%@ page language="java" contentType="text/html; charset=UTF-8"
+w<%@ page language="java" contentType="text/html; charset=UTF-8"
 	pageEncoding="UTF-8"%>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
 <!DOCTYPE html>
@@ -23,7 +23,7 @@
                 <div class="col-lg-6 offset-lg-3 col-md-8 offset-md-2 col-12">
                     <div class="form-head">
                         <h4 class="title">Registration</h4>
-                        <form id="frm" action="./join" method="post" enctype="multipart/form-data">
+                        <form id="frm" action="./joinApp" method="post" enctype="multipart/form-data">
 
                             <div class="form-group">
                                 <label for="userName">아이디&이메일</label>

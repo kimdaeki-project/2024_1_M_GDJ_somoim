@@ -140,9 +140,17 @@ public class MypageController {
 		PaymentDTO paymentDTO = new PaymentDTO();
 		paymentDTO.setCustomerKey(memberDTO.getCustomerKey());
 		SubsDTO subsDTO = subscriptionService.getSubs(paymentDTO);
-		mv.addObject("start",subsDTO.getStartDate());
-		mv.addObject("done",subsDTO.getDoneDate());
-		mv.addObject("svs",subsDTO.getSvs());
+		System.out.println(memberDTO);
+		System.out.println(paymentDTO);
+		System.out.println(subsDTO);
+		if(subsDTO!=null) {
+			mv.addObject("start",subsDTO.getStartDate());
+			mv.addObject("done",subsDTO.getDoneDate());
+			mv.addObject("svs",subsDTO.getSvs());			
+		}else {
+			mv.addObject("start","");
+			mv.addObject("svs",(boolean)false);
+		}
 		mv.setViewName("mypage/paymentList");
 		return mv;
 	}

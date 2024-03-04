@@ -48,16 +48,16 @@
 										<ul style="margin: 1em;">
 											<li>구독 기간</li>
 											<c:if test="${svs eq true}">
-												<c:if test="${start ne ''}">
 													<li>${start}~${done}</li>
-												</c:if>
+											</c:if>
+											<c:if test="${svs ne true}">
 												<c:if test="${start eq ''}">
 													<li>이용 중인 구독권이 없습니다</li>
 												</c:if>
-											</c:if>
-											<c:if test="${svs ne true}">
-												<li style="text-decoration: line-through">${start}~${done}</li>
-												<li>구독권 갱신이 필요합니다</li>
+												<c:if test="${start ne ''}">
+													<li style="text-decoration: line-through">${start}~${done}</li>
+													<li>구독권 갱신이 필요합니다</li>
+												</c:if>
 											</c:if>
 										</ul>
 									</div>

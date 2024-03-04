@@ -154,7 +154,10 @@ public class MemberController {
 		}
 	}
 	
-	
+	@GetMapping("joinGoo")
+	public void joinGoo(MemberDTO memberDTO)throws Exception{
+		
+	}
 	
 
 
@@ -224,6 +227,7 @@ public class MemberController {
 				msg = "가입성공";
 				path = "../";
 			}
+			session.setAttribute("appmember", null);
 			
 			
 			model.addAttribute("msg", msg);

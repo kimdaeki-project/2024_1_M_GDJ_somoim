@@ -7,7 +7,10 @@ async function requestPayment(){
     paymenListData = r;
     console.log(paymenListData);
 
-    render(r);
+    console.log(paymenListData.length);
+    if(paymenListData.length>0){
+      render(r);
+    }
   }))
 }
 
