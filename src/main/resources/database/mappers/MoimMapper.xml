@@ -1,0 +1,162 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+  <!-- mapper namespace는 비우면 에러 -->
+  <mapper namespace="com.somoim.app.moim.MoimDAO">
+  
+  	<!-- list -->
+	<select id="getList" parameterType="MoimDTO" resultMap="listResult">
+	  		SELECT *
+			FROM MOIM 
+			 	 LEFT JOIN MOIMFILE m 
+			 	 USING (MOIMNUM)
+			 	 LEFT JOIN MOIMMEMBER
+			 	 USING (MOIMNUM)
+			WHERE USERNAME = #{userName}
+			ORDER BY MOIMNUM DESC
+	</select>
+	
+	
+	<resultMap type="MoimDTO" id="listResult">
+	  		<id column="MOIMNUM" property="moimNum"/>
+	  		<result column="MOIMNAME" property="moimName"/>
+	  		<result column="MOIMREGION" property="moimRegion"/>
+	  		<result column="MOIMCATEGORY" property="moimCategory"/>
+	  		<result column="MOIMDATE" property="moimDate"/>
+	  		<result column="MOIMTEXT" property="moimText"/>
+	  		<result column="MOIMMEMCOUNT" property="moimMemCount"/>
+	  		<result column="MOIMHEAD" property="moimHead"/>
+	  		<association property="moimFileDTO" javaType="MoimFileDTO">
+	  			<id column="FILENUM" property="fileNum"/>
+		  		<result column="FILENAME" property="fileName"/>
+		  		<result column="ORINAME" property="oriName"/>
+	  		</association>
+			<association property="moimMemberDTO" javaType="MoimMemberDTO">
+	  			<result column="USERNAME" property="userName"/>
+		  		<result column="MOIMROLENUM" property="moimRoleNum"/>
+		  		<result column="JOINDATE" property="joinDate"/>
+	  		</association>
+  	</resultMap>
+	
+	<!-- add -->
+  	<insert id="add" parameterType="MoimDTO">
+  		<selectKey keyProperty="moimNum" order="BEFORE" resultType="Long">
+  			SELECT MOIM_SEQ.NEXTVAL FROM DUAL
+  		</selectKey>
+  	
+  		INSERT INTO MOIM
+  		VALUES (#{moimNum}, #{moimName}, #{moimRegion}, #{moimCategory}, current_date, #{moimText}, #{moimMemCount}, #{moimHead})
+  		
+  	</insert>
+  	<insert id="fileAdd" parameterType="MoimFileDTO">
+  		INSERT INTO MOIMFILE
+  		VALUES (MOIMFILE_SEQ.NEXTVAL, #{moimNum},#{fileName, jdbcType = VARCHAR},#{oriName})
+  	</insert>
+  	<insert id="moimHeadAdd" parameterType="MoimDTO">
+  		INSERT INTO MOIMMEMBER
+  		VALUES (#{moimHead}, 1, #{moimNum}, SYSDATE)
+  	</insert>
+  	
+  	<!-- delete -->
+  	<select id="file" parameterType="MoimDTO" resultType="MoimFileDTO">
+  		SELECT FILENAME
+		FROM MOIMFILE
+		WHERE MOIMNUM = #{moimNum}
+  	</select>
+  	<delete id="delete" parameterType="MoimDTO">
+  		DELETE MOIM
+  		WHERE MOIMNUM = #{moimNum}
+  	</delete>
+  	
+  	<!-- update -->
+  	<!-- GET -->
+  	<!-- moimNum대한 모임 전체 정보와 사진 조회 -->
+  	<select id="getInfo" parameterType="MoimDTO" resultMap="updateResult">
+  		<!-- SELECT *
+		FROM MOIM m 
+		WHERE MOIMNUM = #{moimNum} -->
+		SELECT *
+		FROM MOIM 
+			 LEFT JOIN
+			 MOIMFILE
+			 USING (MOIMNUM)
+		WHERE MOIMNUM = #{moimNum}
+  	</select>
+  	<resultMap type="MoimDTO" id="updateResult">
+  		<id column="MOIMNUM" property="moimNum"/>
+  		<result column="MOIMNAME" property="moimName"/>
+  		<result column="MOIMREGION" property="moimRegion"/>
+  		<result column="MOIMCATEGORY" property="moimCategory"/>
+  		<result column="MOIMDATE" property="moimDate"/>
+  		<result column="MOIMTEXT" property="moimText"/>
+  		<result column="MOIMMEMCOUNT" property="moimMemCount"/>
+  		<result column="MOIMHEAD" property="moimHead"/>
+  		<association property="moimFileDTO" javaType="MoimFileDTO">
+  			<id column="FILENUM" property="fileNum"/>
+	  		<result column="FILENAME" property="fileName"/>
+	  		<result column="ORINAME" property="oriName"/>
+  		</association>
+  	</resultMap>
+ 
+	<!-- POST -->
+	<!-- 모임 내용,사진 수정 -->
+  	<update id="update" parameterType="MoimDTO">
+  		UPDATE MOIM
+  		<set>
+  			<if test="moimName != null and moimName !=''">
+	  		MOIMNAME = #{moimName},
+	  		</if>
+	  		<if test="moimText != null and moimText !=''">
+	  		MOIMTEXT = #{moimText},
+	  		</if>
+	  		<if test="moimMemCount != null and moimMemCount !=''">
+	  		MOIMMEMCOUNT = #{moimMemCount}
+	  		</if>
+  		</set>
+  		WHERE MOIMNUM = #{moimNum}
+  	</update>
+	<update id="fileUpdate" parameterType="MoimFileDTO">
+		UPDATE MOIMFILE
+		<set>
+			<if test="fileName != null or fileName !=''">
+			FILENAME = #{fileName},
+			</if>
+			<if test="oriName != null or oriName !=''">
+			ORINAME = #{oriName}
+			</if>
+		</set>
+		WHERE MOIMNUM = #{moimNum}
+	</update>
+	
+	<!-- 모임 멤버 -->
+	<select id="memInfo" parameterType="MoimDTO" resultType="MoimMemberDTO">
+		SELECT *
+		FROM MOIMMEMBER m 
+		WHERE MOIMNUM =#{moimNum}
+		ORDER BY JOINDATE ASC
+	</select>
+	<select id="memNum" parameterType="MoimDTO" resultType="Long">
+		SELECT COUNT(*)
+		FROM MOIMMEMBER m 
+		WHERE MOIMNUM =#{moimNum}
+	</select>
+  	
+  	<!-- join -->
+  	<insert id="join" parameterType="MoimMemberDTO">
+  		INSERT INTO MOIMMEMBER
+  		VALUES (#{userName}, 3, #{moimNum}, current_date)
+  	</insert>
+  		
+  	<!-- kick -->
+  	<delete id="kick" parameterType="MoimMemberDTO">
+	DELETE FROM MOIMMEMBER
+	WHERE MOIMNUM=#{moimNum} AND USERNAME =#{userName}
+	</delete>
+	
+	<!-- 카테고리 별 숫자 카운트 -->
+	<select id="getCategoryCount" resultType="Map">
+		SELECT MOIMCATEGORY, COUNT(*) AS count FROM MOIM GROUP BY MOIMCATEGORY
+	</select>
+  
+  </mapper>

@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+  <!-- mapper namespace는 비우면 에러 -->
+  <mapper namespace="com.somoim.app.moim.board.BoardDAO">
+  
+  	<sql id="search">
+  		<where>
+  			<if test="pager.searchFind == 'searchFind1' or pager.searchFind=='searchFind4'">
+  				BOARDTITLE LIKE '%'||#{pager.search}||'%'
+  			</if>
+  			<if test="pager.searchFind == 'searchFind2' or pager.searchFind=='searchFind4'">
+  				OR BOARDTEXT LIKE '%'||#{pager.search}||'%'
+  			</if>
+  			<if test="pager.searchFind == 'searchFind3' or pager.searchFind=='searchFind4'">
+  				OR BOARDWRITER LIKE '%'||#{pager.search}||'%'
+  			</if>
+  		</where>
+  	</sql>
+  	
+  	
+  		<!-- SELECT *
+		FROM (SELECT ROWNUM R, N.*
+	 		  FROM (SELECT * FROM MOIMBOARD
+	 		  		WHERE MOIMNUM =#{dto.moimNum} 
+	 		  		<include refid="search"></include>
+	   		  		ORDER BY BOARDNUM DESC)N)
+	   	WHERE R BETWEEN #{pager.startRow} AND #{pager.lastRow} -->
+  	<!-- list -->
+  	<select id="list" resultType="MoimBoardDTO" parameterType="Map">
+	   	SELECT *
+		FROM (SELECT ROWNUM R, N.*
+	  		  FROM (SELECT *
+	  				FROM (SELECT * 
+	  			  		  FROM MOIMBOARD
+	  			  		  WHERE MOIMNUM =#{dto.moimNum})
+					<include refid="search"></include>
+	  				ORDER BY BOARDNUM DESC)N)
+		WHERE R BETWEEN #{pager.startRow} AND #{pager.lastRow}
+  	</select>
+  	<select id="getTotalCount" resultType="Long" parameterType="Map">
+		SELECT COUNT(BOARDNUM)
+		FROM (SELECT *
+			  FROM MOIMBOARD
+			  WHERE MOIMNUM =#{dto.moimNum})
+		<include refid="search"></include>
+	</select>
+  
+  
+  
+  
+  	<!-- add -->
+  	<insert id="add" parameterType="MoimBoardDTO">
+		<selectKey keyProperty="boardNum" resultType="Long" order="BEFORE">
+  			SELECT MOIMBOARD_SEQ.NEXTVAL FROM DUAL
+  		</selectKey>
+		INSERT INTO MOIMBOARD
+	  	VALUES(#{boardNum}, #{boardTitle},#{boardText}, current_date, 0, 0, #{userName}, #{moimNum}, #{boardWriter}, #{boardProfile, jdbcType = VARCHAR})	
+	</insert>
+	<!-- File Add -->
+	<insert id="fileAdd" parameterType="MoimBoardFileDTO">
+		INSERT INTO MOIMBOARDFILE
+		VALUES
+		(MOIMBOARDFILE_SEQ.NEXTVAL, #{boardNum},#{fileName},#{oriName})
+	</insert>
+  
+  	<!-- detail -->
+  	<select id="detail" parameterType="MoimBoardFileDTO" resultMap="detailResult">
+		SELECT *
+		FROM MOIMBOARD
+			 LEFT JOIN
+			 MOIMBOARDFILE
+			 USING (BOARDNUM)
+		WHERE BOARDNUM = #{boardNum}
+	</select>
+	<resultMap type="MoimBoardDTO" id="detailResult">
+		<id column="BOARDNUM" property="boardNum"/>
+		<result column="BOARDTITLE" property="boardTitle"/>
+		<result column="BOARDTEXT" property="boardText"/>
+		<result column="BOARDDATE" property="boardDate"/>
+		<result column="BOARDCLICK" property="boardClick"/>
+		<result column="BOARDLIKE" property="boardLike"/>
+		<result column="USERNAME" property="userName"/>
+		<result column="MOIMNUM" property="moimNum"/>
+		<result column="BOARDWRITER" property="boardWriter"/>
+		<result column="BOARDPROFILE" property="boardProfile"/>
+		<collection property="fileDTOs" javaType="List" ofType="MoimBoardFileDTO">
+			<id column="FILENUM" property="fileNum"/>
+			<result column="FILENAME" property="fileName"/>
+			<result column="ORINAME" property="oriName"/>
+		</collection>
+	</resultMap>
+	
+	<!-- click -->
+	<update id="click" parameterType="MoimBoardDTO">
+		UPDATE MOIMBOARD
+		SET BOARDCLICK = BOARDCLICK + 1
+		WHERE BOARDNUM = #{boardNum}
+	</update>
+	
+	
+	<!-- update -->
+	<update id="update" parameterType="MoimBoardDTO">
+		UPDATE MOIMBOARD
+		<set>
+			<if test="boardTitle != null and boardTitle !=''">
+			BOARDTITLE=#{boardTitle},
+			</if>
+			<if test="boardText != null and boardText !=''">
+			BOARDTEXT=#{boardText}
+			</if>
+		</set>
+		WHERE BOARDNUM=#{boardNum}
+	</update>
+	
+	<!-- delete -->
+	<!-- file List -->
+	<select id="file" parameterType="MoimBoardDTO" resultType="MoimBoardFileDTO">
+		SELECT FILENAME 
+		FROM MOIMBOARDFILE 
+		WHERE BOARDNUM=#{boardNum}
+	</select>
+	<!-- delete -->
+	<delete id="delete" parameterType="MoimBoardDTO">
+		DELETE MOIMBOARD 
+		WHERE BOARDNUM=#{boardNum}
+	</delete>
+	
+	
+  </mapper>

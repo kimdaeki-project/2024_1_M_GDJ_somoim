@@ -3,7 +3,9 @@
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xmlns:beans="http://www.springframework.org/schema/beans"
 	xmlns:context="http://www.springframework.org/schema/context"
-	xsi:schemaLocation="http://www.springframework.org/schema/mvc https://www.springframework.org/schema/mvc/spring-mvc.xsd
+	xmlns:websocket="http://www.springframework.org/schema/websocket"
+	xsi:schemaLocation="http://www.springframework.org/schema/websocket http://www.springframework.org/schema/websocket/spring-websocket-4.3.xsd
+		http://www.springframework.org/schema/mvc https://www.springframework.org/schema/mvc/spring-mvc.xsd
 		http://www.springframework.org/schema/beans https://www.springframework.org/schema/beans/spring-beans.xsd
 		http://www.springframework.org/schema/context https://www.springframework.org/schema/context/spring-context.xsd">
 
@@ -21,8 +23,52 @@
 		<beans:property name="suffix" value=".jsp" />
 	</beans:bean>
 	
-	<context:component-scan base-package="com.somoim.app" />
+	<!-- 로그인 인터셉터 -->
+	<interceptors>
+		<interceptor>
+			<mapping path="/moim/*"/>
+			<mapping path="/category/*"/>
+			<mapping path="/mypage/*"/>
+			<beans:ref bean="authenticationInterCeptor"/>
+		</interceptor>
+	</interceptors>
 	
+	<!-- 관리자 인터셉터 -->
+	<interceptors>
+		<interceptor>
+			<mapping path="/admin/*"/>
+			<exclude-mapping path="/admin/placeList"/>
+			<beans:ref bean="adminIntercepter"/>
+		</interceptor>
+	</interceptors>
+	
+	<!-- 모임 회원만 가능 -->
+	<interceptors>
+		<interceptor>
+			<mapping path="/moim/main/**"/>
+			<!-- <mapping path="/chat"/> -->
+			<exclude-mapping path="/moim/main/home"/>
+			<exclude-mapping path="/moim/main/reply/**"/>
+			<exclude-mapping path="/moim/main/home/**"/>
+			<beans:ref bean="moimJoinCheck"/>
+		</interceptor>
+	</interceptors>
+	
+	<!-- websocket handler -->
+	<websocket:handlers>
+		<websocket:mapping handler="chatHandler" path="/chat"/>
+		<websocket:handshake-interceptors>
+			<beans:bean class="org.springframework.web.socket.server.support.HttpSessionHandshakeInterceptor" />
+		</websocket:handshake-interceptors>
+		<websocket:sockjs></websocket:sockjs>
+	</websocket:handlers>
+	
+	<beans:bean id="chatHandler" class="com.somoim.app.chat.ChatHandler"></beans:bean>
+	
+	
+	
+	
+	<context:component-scan base-package="com.somoim.app" />
 	
 	
 </beans:beans>

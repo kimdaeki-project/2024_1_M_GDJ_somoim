@@ -1,0 +1,177 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+  <!-- mapper namespace는 비우면 에러 -->
+  <mapper namespace="com.somoim.app.board.qna.QnaDAO">
+  	<resultMap type="QnaDTO" id="getDetailResult">
+		<id column="BOARDNUM" property="boardNum" />
+		<result column="BOARDTITLE" property="boardTitle" />
+		<result column="BOARDTEXT" property="boardText" />
+		<result column="BOARDWRITER" property="boardWriter" />
+		<result column="BOARDDATE" property="boardDate" />
+		<result column="USERNAME" property="userName" />
+		<result column="BOARDSECRET" property="boardSecret" />
+		<result column="BOARDCATEGORY" property="boardCategory" />
+
+
+		<collection property="fileDTOs" javaType="List"
+			ofType="BoardFileDTO">
+			<id property="fileNum" column="FILENUM" />
+			<result property="fileName" column="FILENAME" />
+			<result property="oriName" column="ORINAME" />
+
+		</collection>
+	</resultMap>
+
+  
+  	<!-- -->
+	<select id="getListqna" parameterType="Map"
+		resultType="QnaDTO">
+		SELECT * FROM
+		(SELECT ROWNUM R, N.* FROM
+		(select * from
+		(SELECT * FROM QNABOARD
+		<include refid="boardCategorys"></include>
+
+		ORDER BY boardNum DESC
+		)
+		<include refid="search2"></include>
+		)
+		N)
+		WHERE R BETWEEN #{pager.startRow} AND #{pager.lastRow}
+	</select>
+
+
+	<sql id="search2">
+		WHERE
+		<choose>
+			<when test="pager.searchFind=='searchFind1'">
+				boardTitle like '%'||#{pager.search}||'%'
+			</when>
+			<when test="pager.searchFind=='searchFind2'">
+				boardWriter like '%'||#{pager.search}||'%'
+			</when>
+			<when test="pager.searchFind=='searchFind3'">
+				boardText like '%'||#{pager.search}||'%'
+			</when>
+			<otherwise>
+				boardNum like '%'||#{pager.search}||'%'
+			</otherwise>
+		</choose>
+	</sql>
+
+	<sql id="boardCategorys">
+		WHERE
+		<choose>
+			<when test="pager.categorySelect=='category0'">
+				BOARDCATEGORY = 0
+			</when>
+			<when test="pager.categorySelect=='category1'">
+				BOARDCATEGORY = 1
+			</when>
+			<when test="pager.categorySelect=='category2'">
+				BOARDCATEGORY = 2
+			</when>
+			<otherwise>
+				BOARDCATEGORY IN (0,1,2)
+			</otherwise>
+		</choose>
+	</sql>
+	<!-- -->
+  
+  	<insert id="setAdd" parameterType="BoardDTO">
+		<selectKey keyProperty="boardNum" resultType="Long" order="BEFORE">
+			SELECT qna_SEQ.NEXTVAL FROM DUAL
+		</selectKey>
+		INSERT INTO QNABOARD
+		VALUES(
+		#{boardNum}, #{userName}, #{boardTitle}, #{boardText},#{boardWriter},#{boardSecret}, SYSDATE,#{boardCategory}
+		)
+	</insert>
+  
+  	<select id="getTotalCount" parameterType="Map" resultType="Long">
+		SELECT COUNT(boardNum) from (SELECT * FROM (SELECT * FROM QNABOARD 
+		<include refid="search2"></include>
+		)
+		<include refid="boardCategorys"></include>
+		)
+
+	</select>
+  
+  	<!-- Detail -->
+	<select id="getDetail" parameterType="BoardDTO"
+		resultMap="getDetailResult">
+		SELECT * FROM QNABOARD N
+		LEFT JOIN
+		QNABOARDFILE NF
+		USING (BOARDNUM)
+		WHERE BOARDNUM =${boardNum}
+	</select>
+  
+  	<update id="setUpdate" parameterType="BoardDTO">
+		UPDATE QNABOARD
+		<set>
+			<if test="boardTitle != null and boardTitle !=''">
+				BOARDTITLE=#{boardTitle},
+			</if>
+			<if test="boardText != null">
+				BOARDTEXT=#{boardText},
+			</if>
+			<if test="boardCategory != null">
+				boardCategory=${boardCategory}
+			</if>
+		</set>
+		WHERE BOARDNUM=#{boardNum}
+	</update>
+  
+  	<!-- file List -->
+	<select id="getFileList" parameterType="BoardDTO"
+		resultType="BoardFileDTO">
+		SELECT FILENAME FROM QNABOARDFILE WHERE
+		BOARDNUM=#{boardNum}
+	</select>
+  
+  	<!-- FileAdd -->
+	<insert id="setFileAdd" parameterType="BoardFileDTO">
+		INSERT INTO 
+		QNABOARDFILE 
+		VALUES
+		(qnaboardfile_seq.NEXTVAL, #{boardNum},#{userName},#{fileName}, #{oriName})
+	</insert>
+  
+  	<!-- Delete -->
+	<delete id="setDelete" parameterType="MemberDTO">
+		DELETE QNABOARD where BOARDNUM=#{boardNum}
+	</delete>
+  
+  
+  
+  
+  
+  
+  
+  <!-- 이제 안씀 -->
+  	<select id="getList" parameterType="Pager"
+		resultType="QnaDTO">
+		SELECT * FROM
+		(SELECT ROWNUM R, N.* FROM
+		(select * from
+		(SELECT * FROM QNABOARD
+		<include refid="boardCategorys">
+			<property name="search" value="#{search}" />
+		</include>
+
+		ORDER BY boardNum DESC
+		)
+		<include refid="search2"></include>
+		)
+		N)
+		WHERE R BETWEEN #{startRow} AND #{lastRow}
+	</select>
+	<!--  -->  
+  
+  
+  
+  
+  </mapper>

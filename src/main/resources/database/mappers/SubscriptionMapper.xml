@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- mapper namespace는 비우면 에러 -->
+<mapper namespace="com.somoim.app.payment.SubscriptionDAO">
+
+	<insert id="setSubs" parameterType="PaymentDTO">
+		INSERT INTO SUBSCRIPTION (SUBNUM, CUSTOMERKEY, SVS, STARTDATE) VALUES(SUBS_SEQ.NEXTVAL,#{customerKey},1,#{paymentDay})
+	</insert>
+	
+	<update id="upDonedate" parameterType="SubsDTO">
+		UPDATE SUBSCRIPTION SET DONEDATE = #{doneDate} WHERE SUBNUM=#{subNum}
+	</update>
+	
+	<select id="getSubs" parameterType="PaymentDTO" resultType="SubsDTO">
+		SELECT * FROM SUBSCRIPTION WHERE CUSTOMERKEY = #{customerKey}
+	</select>
+	
+	<select id="getAll" resultType="SubsDTO">
+		SELECT * FROM SUBSCRIPTION
+	</select>
+	
+	<select id="updateSVS" parameterType="SubsDTO">
+		UPDATE SUBSCRIPTION SET SVS = #{svs} WHERE SUBNUM=#{subNum}	
+	</select>
+
+</mapper>

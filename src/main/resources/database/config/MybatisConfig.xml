@@ -3,5 +3,39 @@
   PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
   "https://mybatis.org/dtd/mybatis-3-config.dtd">
   <configuration>
+  	<settings> <setting name="jdbcTypeForNull" value="VARCHAR"/> </settings>
   
+  	<typeAliases>
+  		<typeAlias type="com.somoim.app.member.MemberDTO" alias="MemberDTO"/>
+  		<typeAlias type="com.somoim.app.member.ProfileDTO" alias="ProfileDTO"/>
+  		<typeAlias type="com.somoim.app.board.notice.NoticeDTO" alias="NoticeDTO"/>
+  		<typeAlias type="com.somoim.app.board.BoardDTO" alias="BoardDTO"/>
+  		<typeAlias type="com.somoim.app.board.BoardFileDTO" alias="BoardFileDTO"/>
+  		<typeAlias type="com.somoim.app.util.Pager" alias="Pager"/>
+  		<typeAlias type="com.somoim.app.moim.MoimDTO" alias="MoimDTO"/>
+  		<typeAlias type="com.somoim.app.moim.MoimFileDTO" alias="MoimFileDTO"/>
+  		<typeAlias type="com.somoim.app.moim.member.MoimMemberDTO" alias="MoimMemberDTO"/>
+     	<typeAlias type="com.somoim.app.payment.PaymentTypeDTO" alias="PaymentTypeDTO"/>
+  		<typeAlias type="com.somoim.app.board.qna.QnaDTO" alias="QnaDTO"/>	
+        <typeAlias type="com.somoim.app.payment.ClientDTO" alias="ClientDTO"/>
+        <typeAlias type="com.somoim.app.moim.meet.MeetDTO" alias="MeetDTO"/>
+        <typeAlias type="com.somoim.app.moim.meet.MeetFileDTO" alias="MeetFileDTO"/>
+        <typeAlias type="com.somoim.app.moim.board.MoimBoardDTO" alias="MoimBoardDTO"/>
+        <typeAlias type="com.somoim.app.moim.board.MoimBoardFileDTO" alias="MoimBoardFileDTO"/>
+        <typeAlias type="com.somoim.app.board.qna.BoardReplyDTO" alias="BoardReplyDTO"/>
+  		<typeAlias type="com.somoim.app.chat.ChatMessageDTO" alias="ChatMessageDTO"/>
+  		<typeAlias type="com.somoim.app.chat.ChatRoomDTO" alias="ChatRoomDTO"/>
+        <typeAlias type="com.somoim.app.moim.board.ReplyDTO" alias="ReplyDTO"/>
+        <typeAlias type="com.somoim.app.payment.PaymentDTO" alias="PaymentDTO"/>
+        <typeAlias type="com.somoim.app.payment.OrdersDTO" alias="OrdersDTO"/>
+      <typeAlias type="com.somoim.app.payment.SubsDTO" alias="SubsDTO"/>
+  		<typeAlias type="com.somoim.app.member.role.MemberRoleDTO" alias="MemberRoleDTO"/>
+  		<typeAlias type="com.somoim.app.adminPage.AdminPageDTO" alias="AdminPageDTO"/>
+  		<typeAlias type="java.lang.Long" alias="Long"/>
+  		<typeAlias type="java.lang.Integer" alias="Integer"/>
+  		<typeAlias type="java.lang.String" alias="String"/>
+  		<typeAlias type="com.somoim.app.moim.meet.MeetMemberDTO" alias="MeetMemberDTO"/>
+  		<typeAlias type="com.somoim.app.chat.moim.MoimChatDTO" alias="MoimChatDTO"/>
+  	</typeAliases>
   </configuration>
+  

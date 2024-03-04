@@ -15,6 +15,33 @@
 	</properties>
 	<dependencies>
 	
+		<dependency>
+		    <groupId>com.sun.mail</groupId>
+		    <artifactId>javax.mail</artifactId>
+		    <version>1.6.2</version> <!-- 사용하는 JavaMail API 버전에 맞게 수정 -->
+		</dependency>
+	
+		<dependency>
+		    <groupId>jakarta.platform</groupId>
+		    <artifactId>jakarta.jakartaee-api</artifactId>
+		    <version>8.0.0</version>
+		    <scope>provided</scope>
+		</dependency>
+	
+		<dependency>
+		    <groupId>org.springframework</groupId>
+		    <artifactId>spring-context-support</artifactId>
+		    <version>${org.springframework-version}</version> <!-- 사용하는 Spring Framework 버전에 맞게 수정 -->
+		</dependency>
+	
+	
+		<!-- spring-websocket -->
+		<dependency>
+		    <groupId>org.springframework</groupId>
+		    <artifactId>spring-websocket</artifactId>
+		    <version>${org.springframework-version}</version>
+		</dependency>
+	
 		<!-- jackson-databind -->
 		<dependency>
 		    <groupId>com.fasterxml.jackson.core</groupId>
@@ -56,9 +83,7 @@
 		    <artifactId>ojdbc10</artifactId>
 		    <version>19.21.0.0</version>
 		</dependency>
-		
-		
-		
+
 		
 		<!-- Spring -->
 		<dependency>

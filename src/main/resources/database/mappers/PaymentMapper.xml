@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+  <!-- mapper namespace는 비우면 에러 -->
+  <mapper namespace="com.somoim.app.payment.PaymentDAO">
+	
+	<!-- 페이먼트 타입 리스트 -->
+	<select id="getPaymentTypeList" resultType="PaymentTypeDTO">
+  		SELECT * FROM PAYMENTTYPE
+  	</select>
+  	
+  	<!-- 페이먼트 타입 디테일 -->
+  	<select id="getPaymentType" resultType="PaymentTypeDTO" parameterType="PaymentTypeDTO">
+  		SELECT * FROM PAYMENTTYPE WHERE PTYPENUM=#{pTypeNum}
+  	</select>
+  	
+  	<!-- user의 CustomerKey를 가져옴 -->
+  	<select id="getCustomerKey" resultType="MemberDTO" parameterType="MemberDTO">
+  		SELECT CUSTOMERKEY FROM MEMBER WHERE USERNAME=#{userName}
+  	</select>
+  	
+  	<!-- 결제수단의 클라이언트키를 가져옴 -->
+  	<select id="getClientKey" resultType="ClientDTO" parameterType="ClientDTO">
+  		SELECT * FROM CLIENTKEY WHERE KEYNAME=#{keyName}
+  	</select>
+  	
+  	<!-- 결제승인 요청 전 주문정보 저장 -->
+  	<insert id="setOrders" parameterType="OrdersDTO">
+  		INSERT INTO ORDERS VALUES(#{orderId},#{customerKey},current_date,#{orderStatus},#{amount},#{pTypeNum})
+  	</insert>
+  	
+  	<!-- 이전에 결제취소 된 주문건 검색 -->
+  	<select id="getOrders" resultType="OrdersDTO" parameterType="OrdersDTO">
+  		SELECT * FROM ORDERS WHERE CUSTOMERKEY=#{customerKey} AND PTYPENUM=#{pTypeNum} AND ORDERSTATUS=0
+  	</select>
+  	
+  	<!-- 결제된 주문정보 업데이트 -->
+  	<update id="upOrders" parameterType="OrdersDTO">
+  		UPDATE ORDERS SET ORDERSTATUS = #{orderStatus} WHERE ORDERID=#{orderId}
+  	</update>
+  	
+  	<!-- 오더ID로 조회 -->
+  	<select id="searchOrder" parameterType="OrdersDTO" resultType="OrdersDTO">
+  		SELECT * FROM ORDERS WHERE ORDERID=#{orderId}
+  	</select>
+  	
+  	<!-- 결제된 Payment 정보 저장 -->
+  	<insert id="setPayment" parameterType="PaymentDTO">
+  		INSERT INTO PAYMENT VALUES(#{paymentKey},#{orderId},#{customerKey},#{keyName},#{pTypeNum},#{paymentDay},#{amount},#{depositKey},#{payMethod})
+  	</insert>
+  	
+  	<!-- 결제 상태 변경된 Payment 정보 업데이트 -->
+  	<update id="upPayment" parameterType="PaymentDTO">
+  		UPDATE PAYMENT SET PAYMENTDAY=#{paymentDay} WHERE PAYMENTKEY=#{paymentKey}
+  	</update>
+  	
+  	<!-- 가상계좌 미결제 상태 Payment 조회 -->
+  	<select id="getPayment" parameterType="PaymentDTO" resultType="PaymentDTO">
+  		SELECT * FROM PAYMENT WHERE ORDERID=#{orderId}
+  	</select>
+  	
+  	<!-- 멤버의 결제 내역 조회 -->
+  	<select id="getPaymentList" parameterType="MemberDTO" resultType="HashMap">
+  		SELECT ROWNUM,AMOUNT,ptypeName,PAYMETHOD, PAYMENTDAY FROM (
+			SELECT AMOUNT,ptypeName,PAYMETHOD, PAYMENTDAY FROM PAYMENT
+			LEFT JOIN PAYMENTTYPE
+			USING(PTYPENUM)
+			WHERE CUSTOMERKEY = #{customerKey}
+			ORDER BY PAYMENTDAY DESC)
+  	</select>
+  	
+  </mapper>

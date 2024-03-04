@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- mapper namespace는 비우면 에러 -->
+<mapper namespace="com.somoim.app.adminPage.AdminPageDAO">
+
+
+	<!-- user -->
+	<resultMap type="MemberDTO" id="memberlist">
+		<id column="USERNAME" property="userName" />
+		<result column="PASSWORD" property="password" />
+		<result column="NICKNAME" property="nickName" />
+		<result column="NAME" property="name" />
+		<result column="USERBIRTH" property="userBirth" />
+		<result column="ADDRESS" property="address" />
+		<result column="PHONE" property="phone" />
+		<result column="EMAIL" property="email" />
+		<result column="LOGINNUM" property="loginNum" />
+		<collection property="roleDTO" javaType="MemberRoleDTO">
+			<result column="ROLENUM" property="roleNum" />
+			<result column="USERNAME" property="userName" />
+		</collection>
+	</resultMap>
+
+
+	<!-- moimplace -->
+	<resultMap type="AdminPageDTO" id="moimPlace">
+		<id column="placeNum" property="placeNum" />
+		<result column="USERNAME" property="userName" />
+		<result column="PLACETITLE" property="placeTitle" />
+		<result column="PLACEADDRESS" property="placeAddress" />
+		<result column="PLACELINK" property="placeLink" />
+		<result column="PLACEIMAGELINK" property="placeImageLink" />
+	</resultMap>
+
+
+	<!-- userList -->
+	<select id="list" parameterType="MemberDTO"
+		resultMap="memberlist">
+		SELECT * FROM
+		(SELECT ROWNUM R, N.* FROM
+		(
+		SELECT * FROM MEMBER LEFT JOIN MEMBERROLE using(username)
+		<include refid="search2"></include>
+		ORDER BY rolenum asc
+		)
+		N)
+		WHERE R BETWEEN #{startRow} AND #{lastRow}
+	</select>
+
+<!-- placeList -->
+<select id="placeList" parameterType="AdminPageDTO" resultMap="moimPlace">
+SELECT * FROM MOIMPLACE
+</select>
+
+<select id="adminList" parameterType="AdminPageDTO" resultMap="moimPlace">
+SELECT * FROM MOIMPLACE
+</select>
+
+
+
+	<!-- getTotal -->
+	<select id="getTotalCount" resultType="Long">
+		SELECT COUNT(USERNAME) FROM MEMBER
+		<include refid="search2"></include>
+	</select>
+
+	<sql id="search2">
+		WHERE
+		<choose>
+			<when test="searchFind=='searchFind1'">
+				name like '%'||#{search}||'%'
+			</when>
+			<when test="searchFind=='searchFind2'">
+				phone like '%'||#{search}||'%'
+			</when>
+			<when test="searchFind=='searchFind3'">
+				email like '%'||#{search}||'%'
+			</when>
+			<otherwise>
+				userName like '%'||#{search}||'%'
+			</otherwise>
+		</choose>
+	</sql>
+
+
+	<!-- 추천모임Add -->
+	<insert id="add" parameterType="AdminPageDTO">
+	<selectKey keyProperty="placeNum" resultType="Long" order="BEFORE">
+			SELECT place_seq.NEXTVAL FROM DUAL
+		</selectKey>
+		INSERT INTO MOIMPLACE m values(
+		#{placeNum},#{userName},#{placeTitle},#{placeAddress},#{placeLink},#{placeImageLink}
+		)
+	</insert>
+	<!-- detail -->
+	<select id="detail" parameterType="AdminPageDTO" resultMap="moimPlace">
+	select * from MOIMPLACE where PLACENUM=#{placeNum}
+	</select>
+
+	<update id="update" parameterType="AdminPageDTO">
+	update MOIMPLACE 
+	<set>
+				<if test="placeTitle != null and placeTitle !=''">
+				PLACETITLE=#{placeTitle},
+			</if>
+			<if test="placeAddress != null">
+				PLACEADDRESS=#{placeAddress},
+			</if>
+			<if test="placeLink != null">
+				PLACELINK=#{placeLink},
+			</if>
+			<if test="placeImageLink != null">
+				PLACEIMAGELINK=#{placeImageLink}
+			</if>
+	</set>
+	where PLACENUM=#{placeNum}
+	</update>
+
+	<delete id="delete" parameterType="AdminPageDTO">
+	delete MOIMPLACE where PLACENUM=#{placeNum}
+	</delete>
+
+</mapper>

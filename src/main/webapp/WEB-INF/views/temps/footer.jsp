@@ -12,9 +12,9 @@
 						<div class="single-footer f-link">
 							<h3>Quick Links</h3>
 							<ul>
-								<li><a href="/">Login</a></li>
-								<li><a href="/">Sign Up</a></li>
-								<li><a href="/">Help & Support</a></li>
+								<li><a href="/member/login">Login</a></li>
+								<li><a href="join">Sign Up</a></li>
+								<li><a href="/qna/fnq">Help & Support</a></li>
 							</ul>
 						</div>
 						<!-- End Single Widget -->

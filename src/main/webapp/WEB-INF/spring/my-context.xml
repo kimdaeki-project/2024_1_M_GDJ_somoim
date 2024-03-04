@@ -2,7 +2,9 @@
 <beans xmlns="http://www.springframework.org/schema/beans"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xmlns:context="http://www.springframework.org/schema/context"
-	xsi:schemaLocation="http://www.springframework.org/schema/beans https://www.springframework.org/schema/beans/spring-beans.xsd
+	xmlns:websocket="http://www.springframework.org/schema/websocket"
+	xsi:schemaLocation="http://www.springframework.org/schema/websocket http://www.springframework.org/schema/websocket/spring-websocket-4.3.xsd
+		http://www.springframework.org/schema/beans https://www.springframework.org/schema/beans/spring-beans.xsd
 		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-4.3.xsd">
 	
 	<context:property-placeholder location="classpath:database/config/GDJ_somoimPJ.properties"/>
@@ -23,6 +25,11 @@
 	
 	<bean class="org.mybatis.spring.SqlSessionTemplate" id="sqlSession">
 		<constructor-arg name="sqlSessionFactory" ref="sqlSessionFactoryBean"></constructor-arg>
+	</bean>
+	
+	<!-- 결제관련 시크릿키 로드 -->
+	<bean class="com.somoim.app.payment.SecretKey" id="secretKey">
+		<property name="secretKey" value="${toss.secretKey}"></property>
 	</bean>
 	
 </beans>

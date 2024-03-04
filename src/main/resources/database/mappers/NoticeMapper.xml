@@ -1,0 +1,181 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- mapper namespace는 비우면 에러 -->
+<mapper namespace="com.somoim.app.board.notice.NoticeDAO">
+
+
+	<resultMap type="NoticeDTO" id="getDetailResult">
+		<id column="BOARDNUM" property="boardNum" />
+		<result column="BOARDTITLE" property="boardTitle" />
+		<result column="BOARDTEXT" property="boardText" />
+		<result column="BOARDWRITER" property="boardWriter" />
+		<result column="BOARDDATE" property="boardDate" />
+		<result column="USERNAME" property="userName" />
+		<result column="BOARDCATEGORY" property="boardCategory" />
+
+
+		<collection property="fileDTOs" javaType="List" ofType="BoardFileDTO">
+			<id property="fileNum" column="FILENUM" />
+			<result property="fileName" column="FILENAME" />
+			<result property="oriName" column="ORINAME" />
+
+		</collection>
+	</resultMap>
+
+
+	<!-- Delete -->
+	<delete id="setDelete" parameterType="MemberDTO">
+		DELETE NOTICEBOARD where BOARDNUM=#{boardNum}
+	</delete>
+
+
+	<insert id="setAdd" parameterType="BoardDTO">
+		<selectKey keyProperty="boardNum" resultType="Long"
+			order="BEFORE">
+			SELECT notice_seq.NEXTVAL FROM DUAL
+		</selectKey>
+		INSERT INTO NOTICEBOARD
+		VALUES(
+		#{boardNum}, #{userName}, #{boardTitle}, #{boardText}, #{boardWriter}, current_date,
+		#{boardCategory}
+		)
+	</insert>
+
+
+
+	<select id="getList" parameterType="Pager"
+		resultType="NoticeDTO">
+		SELECT * FROM
+		(SELECT ROWNUM R, N.* FROM
+		(select * from
+		(SELECT * FROM NOTICEBOARD
+		<include refid="boardCategorys">
+			<property name="search" value="#{search}" />
+		</include>
+
+		ORDER BY boardNum DESC
+		)
+		<include refid="search2"></include>
+		)
+		N)
+		WHERE R BETWEEN #{startRow} AND #{lastRow}
+	</select>
+
+
+	<!-- -->
+	<select id="getListJson" parameterType="Map"
+		resultType="BoardDTO">
+		SELECT * FROM
+		(SELECT ROWNUM R, N.* FROM
+		(select * from
+		(SELECT * FROM NOTICEBOARD
+		<include refid="boardCategorys"></include>
+
+		ORDER BY boardNum DESC
+		)
+		<include refid="search2"></include>
+		)
+		N)
+		WHERE R BETWEEN #{pager.startRow} AND #{pager.lastRow}
+	</select>
+
+
+	<sql id="search2">
+		WHERE
+		<choose>
+			<when test="pager.searchFind=='searchFind1'">
+				boardTitle like '%'||#{pager.search}||'%'
+			</when>
+			<when test="pager.searchFind=='searchFind2'">
+				boardWriter like '%'||#{pager.search}||'%'
+			</when>
+			<when test="pager.searchFind=='searchFind3'">
+				boardText like '%'||#{pager.search}||'%'
+			</when>
+			<otherwise>
+				boardNum like '%'||#{pager.search}||'%'
+			</otherwise>
+		</choose>
+	</sql>
+
+	<sql id="boardCategorys">
+		WHERE
+		<choose>
+			<when test="pager.categorySelect=='category0'">
+				BOARDCATEGORY = 0
+			</when>
+			<when test="pager.categorySelect=='category1'">
+				BOARDCATEGORY = 1
+			</when>
+			<when test="pager.categorySelect=='category2'">
+				BOARDCATEGORY = 2
+			</when>
+			<otherwise>
+				BOARDCATEGORY IN (0,1,2)
+			</otherwise>
+		</choose>
+	</sql>
+	<!-- -->
+
+
+
+
+	<select id="getTotalCount" parameterType="Map" resultType="Long">
+		SELECT COUNT(boardNum) from (SELECT * FROM (SELECT * FROM NOTICEBOARD
+		<include refid="search2"></include>
+		)
+		<include refid="boardCategorys"></include>
+		)
+
+	</select>
+
+
+	<!-- Detail -->
+	<select id="getDetail" parameterType="BoardDTO"
+		resultMap="getDetailResult">
+		SELECT * FROM NOTICEBOARD N
+		LEFT JOIN
+		NOTICEBOARDFILE NF
+		USING (BOARDNUM)
+		WHERE BOARDNUM =#{boardNum}
+	</select>
+
+
+
+	<update id="setUpdate" parameterType="BoardDTO">
+		UPDATE NOTICEBOARD
+		<set>
+			<if test="boardTitle != null and boardTitle !=''">
+				BOARDTITLE=#{boardTitle},
+			</if>
+			<if test="boardText != null">
+				BOARDTEXT=#{boardText},
+			</if>
+			<if test="boardCategory != null">
+				boardCategory=${boardCategory}
+			</if>
+		</set>
+		WHERE BOARDNUM=#{boardNum}
+	</update>
+
+	<!-- file List -->
+	<select id="getFileList" parameterType="BoardDTO"
+		resultType="BoardFileDTO">
+		SELECT FILENAME FROM NOTICEBOARDFILE WHERE
+		BOARDNUM=#{boardNum}
+	</select>
+
+	<!-- FileAdd -->
+	<insert id="setFileAdd" parameterType="BoardFileDTO">
+		INSERT INTO
+		NOTICEBOARDFILE
+		VALUES
+		(NOTICEBOARDFILE_SEQ.NEXTVAL, #{boardNum},
+		#{userName},#{fileName}, #{oriName})
+	</insert>
+
+
+
+</mapper>

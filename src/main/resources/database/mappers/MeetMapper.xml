@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+  <!-- mapper namespace는 비우면 에러 -->
+  <mapper namespace="com.somoim.app.moim.meet.MeetDAO">
+  	<!-- list -->
+  	<select id="getList" parameterType="MeetDTO" resultMap="listReault">
+	  		SELECT *
+			FROM MEETING m 
+				 LEFT JOIN MEETFILE m2 
+				 USING (MEETNUM)
+			WHERE MOIMNUM = #{moimNum}
+			ORDER BY MEETDATE DESC
+	</select>
+	<resultMap type="MeetDTO" id="listReault">
+	  		<id column="MEETNUM" property="meetNum"/>
+	  		<result column="MOIMNUM" property="moimNum"/>
+	  		<result column="MEETNAME" property="meetName"/>
+	  		<result column="MEETDATE" property="meetDate"/>
+	  		<result column="MEETPLACE" property="meetPlace"/>
+	  		<result column="MEETCOST" property="meetCost"/>
+	  		<result column="MEETCOUNT" property="meetCount"/>
+	  		<result column="MEETX" property="meetX"/>
+	  		<result column="MEETY" property="meetY"/>
+	  		<result column="MEETHEAD" property="meetHead"/>
+	  		<association property="meetFileDTO" javaType="MeetFileDTO">
+	  			<id column="FILENUM" property="fileNum"/>
+		  		<result column="FILENAME" property="fileName"/>
+		  		<result column="ORINAME" property="oriName"/>
+	  		</association>
+  	</resultMap>
+
+  	
+  
+  	<!-- add -->
+  	<insert id="add" parameterType="MeetDTO">
+  		<selectKey keyProperty="meetNum" order="BEFORE" resultType="Long">
+  			SELECT MEET_SEQ.NEXTVAL FROM DUAL
+  		</selectKey>
+  	
+  		INSERT INTO MEETING
+  		VALUES (#{meetNum}, #{moimNum}, #{meetName}, #{meetDate}, #{meetPlace}, #{meetCost}, #{meetCount}, #{meetX}, #{meetY}, #{meetHead})
+  		
+  	</insert>
+  	<insert id="fileAdd" parameterType="MeetFileDTO">
+  		INSERT INTO MEETFILE
+  		VALUES (MEETFILE_SEQ.NEXTVAL, #{meetNum},#{fileName},#{oriName})
+  	</insert>
+
+    <!-- delete -->
+    <select id="file" parameterType="MeetDTO" resultType="MeetFileDTO">
+  		SELECT FILENAME
+		FROM MEETFILE
+		WHERE MEETNUM = #{meetNum}
+  	</select>
+  	<delete id="delete" parameterType="MeetDTO">
+  		DELETE MEETING
+  		WHERE MEETNUM = #{meetNum}
+  	</delete>
+  	
+  	<!-- 모인 멤버수 -->
+  	<select id="memNum" parameterType="MeetDTO" resultType="Integer">
+		SELECT COUNT(*)
+		FROM MEETMEMBER 
+		WHERE MEETNUM = #{meetNum}
+	</select>
+	
+  	<!-- join -->
+  	<insert id="join" parameterType="MeetMemberDTO">
+  		INSERT INTO MEETMEMBER
+  		VALUES (#{userName}, #{moimNum}, #{meetNum})
+  	</insert>
+  	
+  	<!-- contain -->
+  	<select id="contain" parameterType="MeetMemberDTO" resultType="String">
+  		SELECT USERNAME 
+		FROM MEETMEMBER
+		WHERE MEETNUM = #{meetNum}
+  	</select>
+  	
+  </mapper>

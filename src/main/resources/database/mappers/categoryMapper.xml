@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- mapper namespace는 비우면 에러 -->
+<mapper namespace="com.somoim.app.category.CategoryDAO">
+
+	<resultMap type="MoimDTO" id="listReault">
+		<id column="MOIMNUM" property="moimNum" />
+		<result column="MOIMNAME" property="moimName" />
+		<result column="MOIMREGION" property="moimRegion" />
+		<result column="MOIMCATEGORY" property="moimCategory" />
+		<result column="MOIMDATE" property="moimDate" />
+		<result column="MOIMTEXT" property="moimText" />
+		<result column="MOIMMEMCOUNT" property="moimMemCount" />
+		<result column="MOIMHEAD" property="moimHead" />
+		<result column="ADDRESS" property="address"/>
+		<association property="moimFileDTO" javaType="MoimFileDTO">
+			<id column="FILENUM" property="fileNum" />
+			<result column="FILENAME" property="fileName" />
+			<result column="ORINAME" property="oriName" />
+		</association>
+		<association property="moimMemberDTO"
+			javaType="MoimMemberDTO">
+			<result column="USERNAME" property="userName" />
+			<result column="MOIMROLENUM" property="moimRoleNum" />
+			<result column="JOINDATE" property="joinDate" />
+		</association>
+	</resultMap>
+
+	<sql id="moimCategory">
+		WHERE
+		<choose>
+			<when test="pager.categorySelect=='category0'">
+				moimCategory = '아웃도어/여행'
+			</when>
+			<when test="pager.categorySelect=='category1'">
+				moimCategory = '게임/오락'
+			</when>
+			<when test="pager.categorySelect=='category2'">
+				moimCategory = '업종/직무'
+			</when>
+			<when test="pager.categorySelect=='category3'">
+				moimCategory = '운동/스포츠'
+			</when>
+			<when test="pager.categorySelect=='category4'">
+				moimCategory = '사교/인맥'
+			</when>
+			<when test="pager.categorySelect=='category5'">
+				moimCategory = '인문학'
+			</when>
+			<when test="pager.categorySelect=='category6'">
+				moimCategory = '공예/만들기'
+			</when>
+			<when test="pager.categorySelect=='category7'">
+				moimCategory = '봉사활동'
+			</when>
+			<when test="pager.categorySelect=='category8'">
+				moimCategory = '외국/언어'
+			</when>
+			<when test="pager.categorySelect=='category9'">
+				moimCategory = '문화/공연/음악'
+			</when>
+			<when test="pager.categorySelect=='category10'">
+				moimCategory = '요리/제조'
+			</when>
+			<when test="pager.categorySelect=='category11'">
+				moimCategory = '자유주제'
+			</when>
+			<otherwise>
+				moimCategory IN ('아웃도어/여행','게임/오락','업종/직무','운동/스포츠','사교/인맥','인문학','공예/만들기','봉사활동','외국/언어','문화/공연/음악','요리/제조','자유주제')
+			</otherwise>
+		</choose>
+	</sql>
+	
+		<sql id="boardCategorys">
+		WHERE
+		<choose>
+			<when test="pager.searchFind=='find0'">
+				ADDRESS Like '%'||#{CategoryDTO.address}||'%' AND MOIMREGION = ADDRESS
+			</when>
+			<otherwise>
+				ADDRESS Like '%'||'%'
+			</otherwise>
+		</choose>
+	</sql>
+	
+	
+	<select id="getListCategory" parameterType="Map" resultMap="listReault">
+      SELECT * FROM
+      (SELECT ROWNUM R, N.* FROM
+      (SELECT * FROM 
+      (SELECT * FROM MEMBER LEFT JOIN MOIMMEMBER using(username) LEFT JOIN MOIM USING(moimnum) LEFT JOIN MOIMFILE USING (MOIMNUM) 
+       <include refid="moimCategory"></include>
+      ORDER BY MOIMNUM DESC
+      )
+      <include refid="boardCategorys"></include>
+      )
+      N)
+      WHERE R BETWEEN #{pager.startRow} AND #{pager.lastRow}
+
+	</select>
+	
+	<select id="getTotalCount" parameterType="Map" resultType="Long">
+		SELECT COUNT(MOIMNUM) from 
+		(SELECT * FROM (
+		SELECT * FROM MEMBER LEFT JOIN MOIMMEMBER using(username) LEFT JOIN MOIM USING(moimnum)
+		<include refid="boardCategorys"></include>
+		)
+		<include refid="moimCategory"></include>
+		)
+	</select>
+	
+	
+	
+	
+	
+		<!-- file List -->
+	<select id="getFileList" parameterType="MoimDTO"
+		resultType="MoimFileDTO">
+		SELECT FILENAME FROM MOIMFILE WHERE
+		MOIMNUM=#{moimNum}
+	</select>
+
+
+
+</mapper>

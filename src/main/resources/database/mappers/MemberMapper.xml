@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+  <!-- mapper namespace는 비우면 에러 -->
+  <mapper namespace="com.somoim.app.member.MemberDAO">
+  	
+  	<delete id="accountDel" parameterType="MemberDTO">
+  		DELETE FROM MEMBER
+  		WHERE USERNAME=#{userName} AND PASSWORD=#{password}
+  		
+  	</delete>
+  
+  	<select id="checkId" parameterType="MemberDTO" resultType="int">
+  		SELECT COUNT(*) FROM MEMBER
+  		WHERE USERNAME=#{userName} AND PASSWORD=#{password}	
+	</select>
+  
+  	<select id="checkPw" parameterType="MemberDTO" resultType="int">
+  		SELECT COUNT(*) FROM MEMBER
+  		WHERE USERNAME=#{userName} AND EMAIL=#{email}
+  	</select>
+  
+  	<update id="setPasswordUpdate" parameterType="MemberDTO">
+  		UPDATE MEMBER
+  		SET PASSWORD = #{password}
+  		WHERE USERNAME = #{userName} AND EMAIL=#{email}
+  	</update>
+  	
+  	<update id="setUpdate" parameterType="MemberDTO">
+  		UPDATE MEMBER
+  		SET			
+	 		NICKNAME=#{nickName},
+	  		ADDRESS=#{address},
+	  		PHONE=#{phone},
+	  		EMAIL=#{email}
+  		WHERE USERNAME=#{userName}
+  	</update>
+  
+  	<insert id="setJoin" parameterType="MemberDTO">
+  		INSERT INTO MEMBER
+  		VALUES
+  		(#{userName},#{password},#{nickName},#{name},#{userBirth},#{address},#{phone},#{email},#{customerKey},#{loginNum})
+  	</insert>
+  	
+  	<insert id="setProfileJoin" parameterType="ProfileDTO">
+  		INSERT INTO PROFILE
+  		VALUES
+  		(MEMBER_SEQ.NEXTVAL,#{userName},#{fileName},#{oriName})
+  	</insert>
+  	
+  	<insert id="setMemberRole" parameterType="MemberDTO">
+  		INSERT INTO MEMBERROLE
+  		VALUES
+  		(#{userName},(SELECT ROLENUM FROM ROLE WHERE ROLENAME = '일반회원'))
+  	</insert>
+  	
+  	<select id="getDetail" parameterType="MemberDTO" resultMap="getDetailResult">
+  		SELECT * FROM MEMBER
+  			LEFT JOIN PROFILE
+  			USING(USERNAME)
+  			INNER JOIN MEMBERROLE
+  			USING(USERNAME)
+  			INNER JOIN ROLE
+  			USING(ROLENUM)
+  			WHERE USERNAME =#{userName}	
+  	</select>
+  	
+  	<resultMap type="MemberDTO" id="getDetailResult">
+  		<id column="USERNAME" property="userName"/>
+  		<result column="PASSWORD" property="password"/>
+  		<result column="NICKNAME" property="nickName"/>
+  		<result column="NAME" property="name"/>
+  		<result column="USERBIRTH" property="userBirth"/>
+  		<result column="ADDRESS" property="address"/>
+ 		<result column="PHONE" property="phone"/>
+  		<result column="EMAIL" property="email"/>
+  		<result column="LOGINNUM" property="loginNum"/>
+  			<association property="profile" javaType="ProfileDTO">
+  		 		<id column="FILENUM" property="fileNum"/>
+  		 		<result column="FILENAME" property="fileName"/>
+  		 		<result column="ORINAME" property="oriName"/>
+  		 	</association>
+  		 	<collection property="roleDTO" javaType="MemberRoleDTO">
+  		 		<result column="ROLENUM" property="roleNum"/>
+  		 		<result column="USERNAME" property="userName"/>
+  		 	</collection>
+  	</resultMap>
+  	
+  	
+  </mapper>

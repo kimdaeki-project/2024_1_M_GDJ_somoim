@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+  <!-- mapper namespace는 비우면 에러 -->
+  <mapper namespace="com.somoim.app.chat.ChatMessageDAO">
+  	
+  	<!-- ChatRoom -->
+  	<insert id="addChatRoom" parameterType="ChatRoomDTO">
+  		<selectKey order="BEFORE" keyProperty="chatRoomNum" resultType="Long">
+  			SELECT CHATROOM_SEQ.NEXTVAL FROM DUAL 
+  		</selectKey>
+  		INSERT INTO CHATROOM (CHATROOMNUM) VALUES (#{chatRoomNum})
+  	</insert>
+  	  	
+  	<select id="chatRoomCh" resultType="Long">
+  		SELECT DISTINCT CHATROOMNUM FROM CHATROOM
+  	</select>
+  	
+  	<select id="chatRoomList" parameterType="MemberDTO" resultType="Long">
+  		SELECT DISTINCT CHATROOMNUM
+			FROM CHATMESSAGE
+		WHERE USERNAME = #{userName}
+  	</select>
+  	
+  	<select id="chatUserList" parameterType="ChatMessageDTO" resultType="MemberDTO">
+  		SELECT DISTINCT NICKNAME 
+		FROM CHATMESSAGE
+		JOIN MEMBER
+		USING (USERNAME)
+		WHERE CHATROOMNUM = #{chatRoomNum}
+  	</select>
+  	
+  	<!-- Chat -->
+  	<!-- parameter member(userName), chatRoom(chatRoomNum) -->
+  	<insert id="addChat" parameterType="ChatMessageDTO">
+  		INSERT INTO CHATMESSAGE 
+			(MESSAGENUM, CHATROOMNUM, USERNAME, CHATTEXT, CHATTIMESTAMP)
+		VALUES
+			(MESSAGE_SEQ.NEXTVAL, #{chatRoomNum}, #{userName}, #{chatText}, SYSDATE)
+  	</insert>
+
+	<select id="chatHistory" parameterType="ChatMessageDTO" resultType="MemberDTO" resultMap="getRoomMember">
+		SELECT *
+		FROM CHATMESSAGE CM
+			JOIN MEMBER M
+			ON CM.USERNAME = M.USERNAME 
+			JOIN MOIMMEMBER MM
+			ON CM.USERNAME = MM.USERNAME
+		WHERE CHATROOMNUM = #{chatRoomNum} 
+		AND 
+		CM.CHATTIMESTAMP >= (SELECT * FROM(
+		SELECT CHATTIMESTAMP
+		FROM CHATMESSAGE CM
+		WHERE USERNAME = #{userName}
+		)
+		WHERE ROWNUM = 1)
+		ORDER BY CHATTIMESTAMP
+		
+		<!-- 
+		profile도 같이 가져올때 필요 (모두가 profile이 들어있지 않아서 오류) 
+		JOIN PROFILE
+		USING(USERNAME) 
+		-->
+	</select>
+	
+	<resultMap type="ChatMessageDTO" id="getRoomMember">
+		<id column="MESSAGENUM" property="messageNum"/>
+		<result column="CHATROOMNUM" property="chatRoomNum"/>
+		<result column="USERNAME" property="userName"/>
+		<result column="CHATTEXT" property="chatText"/>
+		<result column="CHATTIMESTAMP" property="chatTimeStamp"/>
+		
+		<association property="memberDTO" javaType="MemberDTO">
+			<id column="USERNAME" property="userName"/>
+			<result column="NICKNAME" property="nickName"/>
+			<result column="NAME" property="name"/>
+			<association property="profile" javaType="ProfileDTO">
+				<id column="USERNAME" property="userName"/>
+				<result column="FILENUM" property="fileNum"/>
+				<result column="FILENAME" property="fileName"/>
+				<result column="ORINAME" property="oriName"/>
+			</association>
+		</association>
+		
+
+	</resultMap>
+	
+	<select id="moimChatInfo" parameterType="MemberDTO" resultType="MoimDTO" resultMap="getRoomNumber">
+	
+					<!-- JOIN MOIMFILE
+					USING (MOIMNUM) -->
+			SELECT * 
+					FROM MOIM
+					JOIN MOIMCHAT
+					USING (MOIMNUM)
+			WHERE CHATROOMNUM IN
+				(
+					SELECT DISTINCT CHATROOMNUM  
+					FROM CHATMESSAGE
+					WHERE USERNAME = #{userName}
+				)
+<!-- 			<if test="search != null and search != ''">
+				AND MOIMNAME LIKE '%'||#{search}||'%'
+			</if> -->
+	</select>
+	
+	<resultMap type="MoimDTO" id="getRoomNumber">
+		<id column="MOIMNUM" property="moimNum"/>
+		<result column="MOIMNAME" property="moimName"/>
+		<result column="MOIMREGION" property="moimRegion"/>
+		<result column="MOIMCATEGORY" property="moimCategory"/>
+		<result column="MOIMDATE" property="moimDate"/>
+		<result column="MOIMTEXT" property="moimText"/>
+		<result column="MOIMMEMCOUNT" property="moimMemCount"/>
+		<result column="MOIMHEAD" property="moimHead"/>
+		
+		<association property="chatRoomDTO" javaType="ChatRoomDTO">
+			<id column="CHATROOMNUM" property="chatRoomNum"/>
+		</association>
+		
+		<association property="moimFileDTO" javaType="MoimFileDTO">
+			<id column="MOIMNUM" property="moimNum"/>
+			<result column="FILENUM" property="fileNum"/>
+			<result column="FILENAME" property="fileName"/>
+			<result column="ORINAME" property="oriName"/>
+		</association>
+	</resultMap>
+	
+	<insert id="moimChatAdd" parameterType="Map">
+		INSERT INTO MOIMCHAT (CHATROOMNUM, MOIMNUM, USERNAME)
+		VALUES (#{chatRoomDTO.chatRoomNum}, #{moimDTO.moimNum}, #{memberDTO.userName})
+	</insert>
+	
+	<select id="getLastChat" parameterType="ChatMessageDTO" resultType="ChatMessageDTO">
+		SELECT * FROM 
+			(
+				SELECT * FROM CHATMESSAGE
+				WHERE CHATROOMNUM = #{chatRoomNum}
+				ORDER BY CHATTIMESTAMP DESC
+			)
+		WHERE ROWNUM = 1	
+	</select>
+	
+	<!-- moimNum으로 chatRoomNum 찾기 -->
+	<select id="getMoimRoom" parameterType="moimMemberDTO" resultType="MoimChatDTO">
+		SELECT * FROM MOIMCHAT
+		WHERE MOIMNUM = #{moimNum}
+	</select>
+  </mapper>
