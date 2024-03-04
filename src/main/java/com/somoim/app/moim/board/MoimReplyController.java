@@ -33,7 +33,7 @@ public class MoimReplyController {
 		replyDTO.setUserName(memberDTO.getUserName());
 		replyDTO.setReplyWriter(memberDTO.getNickName());
 		
-		if( memberDTO.getProfile().getFileName() != null) {
+		if( memberDTO.getProfile() != null) {
 			
 			replyDTO.setReplyProfile(memberDTO.getProfile().getFileName());
 		}
